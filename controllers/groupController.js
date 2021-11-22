@@ -1,53 +1,64 @@
-
+const Group = require("../models/groupModel")
+const catchAsync = require("../utils/catchAsync")
 exports.checkId = (req,res,next,val)=>{
 
-    if(val >10){
-        res.status(200).json({
-            status: "fail",
-            data: `There is no group with this id ${val}`
-        }
-        )
-    }
+    // if(val){
+    //     res.status(200).json({
+    //         status: "fail",
+    //         data: `There is no group with this id ${val}`
+    //     }
+    //     )
+    // }
     next()
 }
 
-exports.createGroup = (req,res)=>{
-    res.status(200).json({
-        status: "success",
-        data: `Post with with: ${req.body.name} was created`
-    }
-    )
-}
+exports.createGroup = catchAsync (async (req,res,next)=>{
+    const newTour = await Group.create(req.body);
 
-exports.getAllGroups =(req,res)=>{
     res.status(200).json({
         status: "success",
-        data: "all groups"
-    }
-    )
-}
+        data: {
+            tour:newTour
+        }
+    })
+})
 
-exports.getGroup = (req,res)=>{
-    res.status(200).json({
-        status: "success",
-        data: `Post with id: ${req.params.id}`
-    }
-    )
-}
+exports.getAllGroups = catchAsync(async (req,res,next)=>{
+    const groups = await Group.find()
 
-exports.updateGroup = (req,res)=>{
     res.status(200).json({
         status: "success",
-        data: `Post with id was updated: ${req.params.id}`,
-        changed: `the new name is: ${req.body.name}`
-    }
-    )
-};
+        results: groups.length,
+        data: {groups}
+    })   
+})
 
-exports.deleteGroup =(req,res)=>{
+exports.getGroup = catchAsync (async (req,res,next)=>{
+    const group = await Group.findById(req.params.id)
     res.status(200).json({
         status: "success",
-        data: `Post with id: ${req.params.id} was deleted`
-    }
-    )
-};
+        data: {group}
+    })
+})
+
+exports.updateGroup = catchAsync (async (req,res,next)=>{
+    const group = await Group.findByIdAndUpdate(req.params.id, req.body,{
+        new: true,   // returns the new updated group
+        runValidators: true 
+    })
+
+    res.status(200).json({
+        status: "success",
+        data: {group}
+    })
+});
+
+exports.deleteGroup =catchAsync (async (req,res,next)=>{
+    const group = await Group.findByIdAndDelete(req.params.id)
+
+    res.status(204).json({
+        status: "success",
+        data: null
+    } )
+
+});
