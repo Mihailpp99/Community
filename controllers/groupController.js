@@ -14,6 +14,7 @@ exports.checkId = (req,res,next,val)=>{
 }
 
 exports.createGroup = catchAsync (async (req,res,next)=>{
+    
     const newTour = await Group.create(req.body);
 
     res.status(200).json({

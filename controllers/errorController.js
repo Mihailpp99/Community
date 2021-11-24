@@ -1,3 +1,19 @@
+const AppError = require("./../utils/appError")
+
+const handleUniqueGroupName = err =>{
+    const message = `This name already exists`;
+    return new AppError(message,400);
+}
+
+const handleValidationErrorDB = err =>{
+    //console.log(err)
+   //const errors = Object.entries(err.errors).map(el => el.message);
+    console.log(err.errors.description)
+    let error = JSON.stringify(err.errors.description.message)
+    const message = `Invalid input data: ${error}`;
+    return new AppError(message,400);
+}
+
 const sendErrorDev = (err,res)=>{
     res.status(err.statusCode).json({
         status: err.status,
@@ -8,7 +24,9 @@ const sendErrorDev = (err,res)=>{
 }
 
 const sendErrorProd = (err,res)=>{
+    //console.log(err.isOperational)
     if(err.isOperational){
+        console.log("send Prod:  isOperational is true")
         res.status(err.statusCode).json({
             status: err.status,
             message: err.message
@@ -16,10 +34,10 @@ const sendErrorProd = (err,res)=>{
 
     }
     else{
-        console.log("Programming error")
+        //console.log(err)
         res.status(500).json({
             status: "error",
-            message: "Something went very wrong"
+            message: err
         })
     }
 }
@@ -33,10 +51,14 @@ module.exports = (err,req,res,next)=>{
         sendErrorDev(err,res)
     }
     else if(process.env.NODE_ENV === "prod"){
-        sendErrorProd(err,res);
+        let error = {...err};
+        //console.log(err.name)
+       
+        if(error.name === "MongoError" && error.code === 11000) error = handleUniqueGroupName(error);
+        if(err.name === "ValidationError") error = handleValidationErrorDB(error)
+        // error = handleValidationErrorDB(error);
+
+        sendErrorProd(error,res);
 
     }
-
-
-
 }
