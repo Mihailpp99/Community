@@ -2,6 +2,7 @@ const User = require("./../models/userModel");
 const catchAsync = require("../utils/catchAsync")
 const jwt = require("jsonwebtoken")
 const AppError = require("./../utils/appError")
+const {promisify} = require("util")
 
 const signToken = id =>{
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -55,3 +56,36 @@ exports.signin = catchAsync(async (req,res,next) =>{
         token
     })
 })
+
+exports.protect = catchAsync(async(req,res,next)=>{
+    // Getting token and check if it's there
+    let token =""
+    if(req.headers.authorization && req.headers.authorization.startsWith("Bearer")){
+        token = req.headers.authorization.split(" ")[1];
+    }
+    if(!token){
+        return next(new AppError("Please log in you account",401))
+    }
+
+    // Verification token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+    console.log("stop")
+
+
+    // Check if  user still exists
+    const freshUser = await User.findById(decoded.id);
+    if(!freshUser){
+        return next(new AppError("The user belongig to this token no longer exists"))
+    }
+
+    // Check if user changed password after token was issued
+    if(freshUser.changedPasswordAfter(decoded.iat)){
+        //check if it's work. If there is problem it might be with the format of the date
+        return next(new AppError("You changed you pass recently. Please log in again",401))
+    }
+
+    req.user = freshUser;
+    next()
+})
+
+

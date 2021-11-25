@@ -14,6 +14,12 @@ const handleValidationErrorDB = err =>{
     return new AppError(message,400);
 }
 
+const handleJWTError = () =>new AppError("Invalid token, please log in again", 401)
+const handleJWTExpireError = () =>new AppError("Your session expired, please log in again", 401)
+
+
+
+
 const sendErrorDev = (err,res)=>{
     res.status(err.statusCode).json({
         status: err.status,
@@ -55,8 +61,10 @@ module.exports = (err,req,res,next)=>{
         //console.log(err.name)
        
         if(error.name === "MongoError" && error.code === 11000) error = handleUniqueGroupName(error);
-        if(err.name === "ValidationError") error = handleValidationErrorDB(error)
-        // error = handleValidationErrorDB(error);
+        if(err.name === "ValidationError") error = handleValidationErrorDB(error);
+
+        if(err.name === "JsonWebTokenError") error = handleJWTError();
+        if(error.name ==="TokenExpiredError") error = handleJWTExpireError();
 
         sendErrorProd(error,res);
 
