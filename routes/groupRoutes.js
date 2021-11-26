@@ -10,7 +10,7 @@ router.param("id", groupController.checkId)
 //////////////////////////////////////////////////
 
 router.route("/").get(authController.protect, groupController.getAllGroups).post(groupController.createGroup);
-router.route("/:id").get(groupController.getGroup).delete(groupController.deleteGroup).patch(groupController.updateGroup);
+router.route("/:id").get(groupController.getGroup).delete(authController.protect,authController.restrictTo("admin"),  groupController.deleteGroup).patch(groupController.updateGroup);
 
 
 module.exports = router;
