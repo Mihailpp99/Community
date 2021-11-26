@@ -3,9 +3,42 @@ const morgan = require("morgan")
 const AppError = require("./utils/appError")
 const app = express();
 const globalErrorHanlder = require("./controllers/errorController")
+const rateLimit = require("express-rate-limit") // prevents brute force attacks
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const mongoSanitize = require("express-mongo-sanitize");
+const hpp = require("hpp");
 
-app.use(morgan("dev"))  // consoles the info about the request
-app.use(express.json()); // the data from the body is added to the req; that is middleware
+
+// Set security HTTP headers
+app.use(helmet())
+
+if(process.env.NODE_ENV === "dev"){
+    app.use(morgan("dev"))  // consoles the info about the request
+}
+
+// Limit requrests from Same IP
+const limiter = rateLimit({
+    max:100,
+    windowMs: 60*60*1000,
+    message: "Too many requrests from this IP "
+})
+app.use("/api", limiter)
+
+
+// Body parser, reading data from body into req.body
+app.use(express.json({limit: "10kb"})); // the data from the body is added to the req; that is middleware
+
+// Data sanitization agains noSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization agains XSS
+app.use(xss());
+
+// Prevent parameter polution
+app.use(hpp({
+    whitelist: ["duration"]
+}))
 
 const groupRouter = require("./routes/groupRoutes")
 const userRouter = require("./routes/userRoutes")

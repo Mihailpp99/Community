@@ -12,6 +12,27 @@ const signToken = id =>{
     })
 }
 
+const createSendToken = (user,statusCode,res) =>{
+    const token = signToken(user._id);
+    const cookieOptions = {
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24*60 *60 * 1000),
+        httpOnly:true
+    }
+    if(process.env.NODE_ENV==="prod") cookieOptions.secure = true
+    res.cookie("jwt",token,cookieOptions)
+    
+    // remove the password from the output
+    user.password = undefined
+    res.status(statusCode).json({
+        status: "success",
+        token,
+        data:{
+            user
+        }
+    })
+}
+
+
 exports.signup = catchAsync(async (req,res,next)=>{
     const newUser = await User.create({
         name:req.body.name,
@@ -167,3 +188,25 @@ exports.resetPassword = catchAsync(async(req,res,next)=>{
 
 
 })
+
+exports.updatePassword = catchAsync(async(req,res,next) =>{
+    // get user from collection
+    const user = await User.findById(req.user.id).select("+password")
+
+    // check if POSTED current password is correct
+    if(!(await user.correctPassword(req.body.passwordCurrent, user.password))){
+        return next(new AppError("Your current password is wrong",401));
+
+    }
+
+
+    // if so update pass
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save() // USer.findByIDAndUpdaet will not work as intended!
+
+    // Log user in, send JWT
+    createSendToken(user,200,res)
+
+}
+)
