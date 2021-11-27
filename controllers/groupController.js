@@ -1,4 +1,5 @@
 const Group = require("../models/groupModel")
+const User = require("../models/userModel")
 const catchAsync = require("../utils/catchAsync")
 const AppError = require("./../utils/appError")
 exports.checkId = (req,res,next,val)=>{
@@ -15,12 +16,19 @@ exports.checkId = (req,res,next,val)=>{
 
 exports.createGroup = catchAsync (async (req,res,next)=>{
     
-    const newTour = await Group.create(req.body);
+    const newGroup = await Group.create(req.body);
+    const addGroup = await User.findByIdAndUpdate(req.body.members,{$push: { groups: newGroup._id}},{
+        new: true,   // returns the new updated group
+        runValidators: true,
+        useFindAndModify: false 
+    })
+
 
     res.status(200).json({
         status: "success",
         data: {
-            tour:newTour
+            tour:newGroup,
+            user: addGroup
         }
     })
 })
@@ -74,6 +82,34 @@ exports.updateGroup = catchAsync (async (req,res,next)=>{
     res.status(200).json({
         status: "success",
         data: {group}
+    })
+});
+
+exports.addUser = catchAsync (async (req,res,next)=>{
+    // try{
+    //     const group = await Group.findByIdAndUpdate(req.params.id, {$push: { members: req.body.user }},{
+    //         new: true,   // returns the new updated group
+    //         runValidators: true,
+    //         useFindAndModify: false 
+    //     })
+    // }catch(err){
+    //     return next(new AppError(`No group found with that ID`, 404))
+    // }
+
+    const group = await Group.findByIdAndUpdate(req.params.id, {$push: { members: req.body.user }},{
+        new: true,   // returns the new updated group
+        runValidators: true,
+        useFindAndModify: false 
+    })
+    const addGroup = await User.findByIdAndUpdate(req.body.user,{$push: { groups: req.params.id}},{
+        new: true,   // returns the new updated group
+        runValidators: true,
+        useFindAndModify: false 
+    })
+
+    res.status(200).json({
+        status: "success",
+        data: {group,addGroup}
     })
 });
 

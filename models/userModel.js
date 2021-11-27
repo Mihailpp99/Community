@@ -45,7 +45,9 @@ const userSchema = new mongoose.Schema({
         type:Boolean,
         default: true,
         select: false
-    }
+    },
+    groups:[{type: mongoose.Schema.ObjectId,
+        ref: "Group", default: "No groups"}]
 })
 
 userSchema.pre("save", async function (next){

@@ -16,10 +16,10 @@ const groupSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
-    test:{
-        type:String,
-        unique: [true, "This test already exists"]
-    }
+    members:[
+        {type: mongoose.Schema.ObjectId,
+        ref: "User", required: [true, "The group must have a user"]}
+    ]
     // }
     // {
     //     toJSON:{virtuals:true},

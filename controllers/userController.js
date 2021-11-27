@@ -47,13 +47,6 @@ exports.updateMe = catchAsync(async (req,res,next) =>{
 })
 
 
-exports.createUser = (req,res)=>{
-    res.status(200).json({
-        status: "success",
-        data: `User with with: ${req.body.name} was created`
-    }
-    )
-}
 
 exports.getAllUsers =(req,res)=>{
     res.status(200).json({
@@ -87,3 +80,6 @@ exports.deleteUser =(req,res)=>{
     }
     )
 };
+
+
+
