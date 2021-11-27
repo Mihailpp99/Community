@@ -2,6 +2,8 @@ const Group = require("../models/groupModel")
 const User = require("../models/userModel")
 const catchAsync = require("../utils/catchAsync")
 const AppError = require("./../utils/appError")
+const factory = require("./factoryController")
+
 exports.checkId = (req,res,next,val)=>{
 
     // if(val){
@@ -50,14 +52,14 @@ exports.getGroup = catchAsync (async (req,res,next)=>{
         return next(new AppError(`No group found with that ID`, 404))
     }
 
-    const group = await Group.findById(req.params.id);
+    const group = await Group.findById(req.params.id).populate({path: "members", select: "-__v"});
     
 
     // this if doesn't work because the await const is catched from catchAsync and the code execution for this function stops at const group
     // if(!group){
     //     return next(new AppError(`No group found with that ID`, 404))
     // }
-
+    
     res.status(200).json({
         status: "success",
         data: {group}
@@ -113,17 +115,4 @@ exports.addUser = catchAsync (async (req,res,next)=>{
     })
 });
 
-exports.deleteGroup =catchAsync (async (req,res,next)=>{
-    try{
-        const group = await Group.findByIdAndDelete(req.params.id)
-    }catch(err){
-        return next(new AppError(`No group found with that ID`, 404))
-    }
-    const group = await Group.findByIdAndDelete(req.params.id)
-
-    res.status(204).json({
-        status: "success",
-        data: null
-    } )
-
-});
+exports.deleteGroup = factory.deleteOne(Group)

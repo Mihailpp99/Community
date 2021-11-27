@@ -30,6 +30,13 @@ const groupSchema = new mongoose.Schema({
 // tourScehma.virtual("virtualPro").get(function(){
 //     return this.name / 8;
 // })
-const Group = mongoose.model("Group", groupSchema)
+const Group = mongoose.model("Group", groupSchema);
+
+//   in the Tour Model
+//  tourSchema.virtual("reviews", {
+//     ref: "Review",
+//     foreignField: "tour",
+//     localField: "_id"
+// })
 
 module.exports = Group;
