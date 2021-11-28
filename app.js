@@ -42,9 +42,11 @@ app.use(hpp({
 
 const groupRouter = require("./routes/groupRoutes")
 const userRouter = require("./routes/userRoutes")
+const postRouter = require("./routes/postRoutes")
 
 app.use("/api/groups", groupRouter);
 app.use("/api/users", userRouter);
+app.use("/api/posts", postRouter)
 
 app.all("*",(req,res,next) =>{
     next(new AppError(`Can't find ${req.originalUrl} on this server`, 404))
