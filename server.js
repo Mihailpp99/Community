@@ -28,7 +28,7 @@ const port = process.env.PORT;
 const server = app.listen(port, ()=>{
     console.log("The App is running")
 })
-// mongodb+srv://mihailpp99:mihailpp99pass@cluster0.hwinv.mongodb.net/test    connect with mongo atlas
+
 
 
 
